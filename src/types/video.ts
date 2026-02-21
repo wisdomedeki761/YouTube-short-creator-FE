@@ -9,6 +9,7 @@ export type VideoStatus =
 export interface Video {
   id: string;
   title: string;
+  filename?: string;
   status: VideoStatus;
   processingProgress?: number;
   editedVideoUrl?: string | null;

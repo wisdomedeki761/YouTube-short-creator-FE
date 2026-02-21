@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { apiClient } from '@/lib/api';
+import { ApprovalGuard } from '@/components/auth/ApprovalGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -25,6 +26,7 @@ export default function ApiKeysPage() {
   const [youtubeClientSecret, setYoutubeClientSecret] = useState('');
   const [youtubeAccessToken, setYoutubeAccessToken] = useState('');
   const [youtubeRefreshToken, setYoutubeRefreshToken] = useState('');
+  const [accountTag, setAccountTag] = useState('');
 
   // Facebook fields
   const [facebookAppId, setFacebookAppId] = useState('');
@@ -54,7 +56,8 @@ export default function ApiKeysPage() {
             code,
             youtubeClientId,
             youtubeClientSecret,
-            redirectUri
+            redirectUri,
+            accountTag.trim() || undefined
           );
 
           toast.success('YouTube authorized successfully!');
@@ -70,6 +73,7 @@ export default function ApiKeysPage() {
           setYoutubeClientSecret('');
           setYoutubeAccessToken('');
           setYoutubeRefreshToken('');
+          setAccountTag('');
         } catch (error: any) {
           toast.error(error.message || 'Failed to complete authorization');
         } finally {
@@ -147,7 +151,8 @@ export default function ApiKeysPage() {
             youtubeClientId.trim(),
             youtubeClientSecret.trim(),
             youtubeAccessToken.trim(),
-            youtubeRefreshToken.trim()
+            youtubeRefreshToken.trim(),
+            accountTag.trim() || undefined
           );
 
           toast.success('YouTube credentials added successfully');
@@ -158,6 +163,7 @@ export default function ApiKeysPage() {
           setYoutubeClientSecret('');
           setYoutubeAccessToken('');
           setYoutubeRefreshToken('');
+          setAccountTag('');
         } catch (error: any) {
           toast.error(error.message || 'Failed to add YouTube credentials');
         } finally {
@@ -222,14 +228,16 @@ export default function ApiKeysPage() {
     setYoutubeClientSecret('');
     setYoutubeAccessToken('');
     setYoutubeRefreshToken('');
+    setAccountTag('');
     setFacebookAppId('');
     setFacebookAppSecret('');
     setFacebookAccessToken('');
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <ApprovalGuard>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">API Keys</h1>
           <p className="mt-2 text-gray-600">Manage your YouTube and Facebook credentials</p>
@@ -319,6 +327,22 @@ export default function ApiKeysPage() {
                     . Then click authorize to login with Google and get access tokens.
                   </p>
 
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Account Name/Tag (Optional)
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="e.g., Main Channel, Backup Account"
+                      value={accountTag}
+                      onChange={(e) => setAccountTag(e.target.value)}
+                      maxLength={50}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Give this account a name to identify it later
+                    </p>
+                  </div>
+
                   <Input
                     type="text"
                     placeholder="Client ID"
@@ -367,6 +391,22 @@ export default function ApiKeysPage() {
                     </a>
                     . No authorization popup needed - enter everything manually.
                   </p>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Account Name/Tag (Optional)
+                    </label>
+                    <Input
+                      type="text"
+                      placeholder="e.g., Main Channel, Backup Account"
+                      value={accountTag}
+                      onChange={(e) => setAccountTag(e.target.value)}
+                      maxLength={50}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Give this account a name to identify it later
+                    </p>
+                  </div>
 
                   <Input
                     type="text"
@@ -462,6 +502,24 @@ export default function ApiKeysPage() {
                         <Badge className="bg-green-100 text-green-800">Active</Badge>
                       )}
                     </div>
+
+                    {/* Account Tag and Channel Info */}
+                    {key.accountTag && (
+                      <p className="text-lg font-semibold text-gray-900 mb-1">
+                        {key.accountTag}
+                      </p>
+                    )}
+                    {key.channelTitle && (
+                      <p className="text-sm text-gray-600 mb-1">
+                        Channel: {key.channelTitle}
+                      </p>
+                    )}
+                    {key.channelId && (
+                      <p className="text-xs text-gray-500 font-mono mb-2">
+                        ID: {key.channelId}
+                      </p>
+                    )}
+
                     <div className="mt-2 space-y-1">
                       <p className="text-sm text-gray-600">
                         <span className="font-medium">Created:</span> {formatDate(key.createdAt)}
@@ -469,6 +527,11 @@ export default function ApiKeysPage() {
                       {key.lastUsed && (
                         <p className="text-sm text-gray-600">
                           <span className="font-medium">Last used:</span> {formatDate(key.lastUsed)}
+                        </p>
+                      )}
+                      {key.usageCount !== undefined && (
+                        <p className="text-sm text-gray-600">
+                          <span className="font-medium">Uploads:</span> {key.usageCount || 0}
                         </p>
                       )}
                     </div>
@@ -500,6 +563,7 @@ export default function ApiKeysPage() {
           ))}
         </div>
       )}
-    </div>
+      </div>
+    </ApprovalGuard>
   );
 }

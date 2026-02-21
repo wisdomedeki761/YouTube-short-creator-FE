@@ -63,8 +63,8 @@ class ApiClient {
     return response.data;
   }
 
-  async register(email: string, password: string): Promise<ApiResponse> {
-    const response = await this.client.post('/api/auth/register', { email, password });
+  async register(email: string, password: string, username?: string): Promise<ApiResponse> {
+    const response = await this.client.post('/api/auth/register', { email, password, username });
     return response.data;
   }
 
@@ -172,9 +172,18 @@ class ApiClient {
     });
   }
 
-  async approveVideo(id: string, platforms: string[], title?: string, description?: string): Promise<any> {
+  async approveVideo(
+    id: string,
+    platforms: string[],
+    youtubeAccounts?: string[],
+    facebookAccounts?: string[],
+    title?: string,
+    description?: string
+  ): Promise<any> {
     const response = await this.client.post(`/api/videos/${id}/approve`, {
       platforms,
+      youtubeAccounts: youtubeAccounts || undefined,
+      facebookAccounts: facebookAccounts || undefined,
       title: title || undefined,
       description: description || undefined
     });
@@ -237,6 +246,11 @@ class ApiClient {
     return response.data;
   }
 
+  async updateAccountTag(accountId: string, tag: string): Promise<ApiKey> {
+    const response = await this.client.put(`/api/users/api-keys/${accountId}/tag`, { tag });
+    return response.data?.data || response.data;
+  }
+
   async startYouTubeOAuth(clientId: string, clientSecret: string, redirectUri: string): Promise<{ authUrl: string }> {
     const response = await this.client.post('/api/users/youtube/oauth/start', {
       clientId,
@@ -246,22 +260,24 @@ class ApiClient {
     return response.data?.data || response.data;
   }
 
-  async completeYouTubeOAuth(code: string, clientId: string, clientSecret: string, redirectUri: string): Promise<ApiKey> {
+  async completeYouTubeOAuth(code: string, clientId: string, clientSecret: string, redirectUri: string, accountTag?: string): Promise<ApiKey> {
     const response = await this.client.post('/api/users/youtube/oauth/callback', {
       code,
       clientId,
       clientSecret,
       redirectUri,
+      accountTag,
     });
     return response.data?.data || response.data;
   }
 
-  async addYouTubeManual(clientId: string, clientSecret: string, accessToken: string, refreshToken: string): Promise<ApiKey> {
+  async addYouTubeManual(clientId: string, clientSecret: string, accessToken: string, refreshToken: string, accountTag?: string): Promise<ApiKey> {
     const response = await this.client.post('/api/users/api-keys/youtube/manual', {
       clientId,
       clientSecret,
       accessToken,
       refreshToken,
+      accountTag,
     });
     return response.data?.data || response.data;
   }
@@ -278,9 +294,19 @@ class ApiClient {
     return response.data;
   }
 
-  async updateUserStatus(userId: string, status: string): Promise<User> {
-    const response = await this.client.put(`/api/admin/users/${userId}/status`, { status });
-    return response.data;
+  async approveUser(userId: string): Promise<User> {
+    const response = await this.client.post(`/api/admin/users/${userId}/approve`);
+    return response.data?.data || response.data;
+  }
+
+  async rejectUser(userId: string): Promise<User> {
+    const response = await this.client.post(`/api/admin/users/${userId}/reject`);
+    return response.data?.data || response.data;
+  }
+
+  async revokeUser(userId: string): Promise<User> {
+    const response = await this.client.post(`/api/admin/users/${userId}/revoke`);
+    return response.data?.data || response.data;
   }
 
   async getFillerVideos(): Promise<any[]> {

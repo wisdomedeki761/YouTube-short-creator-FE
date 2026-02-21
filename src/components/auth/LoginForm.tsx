@@ -114,7 +114,7 @@ export const LoginForm: React.FC = () => {
       <GoogleOAuthButton />
 
       <p className="text-center text-sm text-gray-600">
-        Don't have an account?{' '}
+        Don&apos;t have an account?{' '}
         <Link href="/register" className="text-primary-600 hover:text-primary-700">
           Sign up
         </Link>

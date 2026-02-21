@@ -11,6 +11,7 @@ interface ModalProps {
   title?: string;
   children: React.ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  className?: string;
   showCloseButton?: boolean;
   preventClose?: boolean; // Prevent closing when true (e.g., during upload)
 }
@@ -21,6 +22,7 @@ export const Modal: React.FC<ModalProps> = ({
   title,
   children,
   size = 'md',
+  className,
   showCloseButton = true,
   preventClose = false,
 }) => {
@@ -59,7 +61,8 @@ export const Modal: React.FC<ModalProps> = ({
         className={cn(
           'relative w-full rounded-lg bg-white dark:bg-gray-800 shadow-xl',
           sizes[size],
-          'max-h-[90vh] overflow-y-auto'
+          'max-h-[90vh] overflow-y-auto',
+          className
         )}
         onClick={(e) => e.stopPropagation()}
       >

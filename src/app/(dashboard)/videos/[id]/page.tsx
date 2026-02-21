@@ -4,12 +4,14 @@ import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { apiClient } from '@/lib/api';
 import { Video } from '@/types/video';
+import { ApiKey } from '@/types/user';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Input } from '@/components/ui/Input';
 import { LoadingSpinner } from '@/components/common/LoadingSpinner';
 import { ErrorAlert } from '@/components/common/ErrorAlert';
+import { AccountSelector } from '@/components/dashboard/AccountSelector';
 import { formatDate, formatDuration, formatFileSize } from '@/utils/helpers';
 import { VIDEO_STATUS_COLORS } from '@/lib/constants';
 import { cn } from '@/utils/helpers';
@@ -31,12 +33,30 @@ export default function VideoDetailPage() {
   const [videoDescription, setVideoDescription] = useState('');
   const [showResultModal, setShowResultModal] = useState(false);
   const [uploadResult, setUploadResult] = useState<any>(null);
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
+  const [selectedYoutubeAccounts, setSelectedYoutubeAccounts] = useState<string[]>([]);
+  const [selectedFacebookAccounts, setSelectedFacebookAccounts] = useState<string[]>([]);
 
   useEffect(() => {
     if (params.id) {
       fetchVideo(params.id as string);
     }
   }, [params.id]);
+
+  useEffect(() => {
+    if (showApproveModal) {
+      fetchApiKeys();
+    }
+  }, [showApproveModal]);
+
+  const fetchApiKeys = async () => {
+    try {
+      const keys = await apiClient.getApiKeys();
+      setApiKeys(keys);
+    } catch (error) {
+      console.error('Failed to fetch API keys:', error);
+    }
+  };
 
   const fetchVideo = async (id: string) => {
     setLoading(true);
@@ -63,10 +83,28 @@ export default function VideoDetailPage() {
       toast.error('Please enter a title for the video');
       return;
     }
+
+    // Validate account selection
+    if (selectedPlatforms.includes('youtube') && selectedYoutubeAccounts.length === 0) {
+      toast.error('Please select at least one YouTube account');
+      return;
+    }
+    if (selectedPlatforms.includes('facebook') && selectedFacebookAccounts.length === 0) {
+      toast.error('Please select at least one Facebook account');
+      return;
+    }
+
     setApproving(true);
     setShowApproveModal(false);
     try {
-      const result = await apiClient.approveVideo(video.id, selectedPlatforms, videoTitle, videoDescription);
+      const result = await apiClient.approveVideo(
+        video.id,
+        selectedPlatforms,
+        selectedYoutubeAccounts,
+        selectedFacebookAccounts,
+        videoTitle,
+        videoDescription
+      );
       setUploadResult(result);
       setShowResultModal(true);
       toast.success('Video posted successfully!', { duration: 3000 });
@@ -75,6 +113,8 @@ export default function VideoDetailPage() {
     } finally {
       setApproving(false);
       setSelectedPlatforms([]);
+      setSelectedYoutubeAccounts([]);
+      setSelectedFacebookAccounts([]);
     }
   };
 
@@ -264,6 +304,36 @@ export default function VideoDetailPage() {
               </button>
             </div>
 
+            {/* YouTube Account Selection */}
+            {selectedPlatforms.includes('youtube') && (
+              <div className="space-y-3 mb-6">
+                <label className="block text-sm font-medium text-gray-700">
+                  Select YouTube Account(s) *
+                </label>
+                <AccountSelector
+                  platform="youtube"
+                  accounts={apiKeys}
+                  selectedAccounts={selectedYoutubeAccounts}
+                  onSelectionChange={setSelectedYoutubeAccounts}
+                />
+              </div>
+            )}
+
+            {/* Facebook Account Selection */}
+            {selectedPlatforms.includes('facebook') && (
+              <div className="space-y-3 mb-6">
+                <label className="block text-sm font-medium text-gray-700">
+                  Select Facebook Account(s) *
+                </label>
+                <AccountSelector
+                  platform="facebook"
+                  accounts={apiKeys}
+                  selectedAccounts={selectedFacebookAccounts}
+                  onSelectionChange={setSelectedFacebookAccounts}
+                />
+              </div>
+            )}
+
             <div className="flex gap-3">
               <Button
                 variant="outline"
@@ -289,7 +359,7 @@ export default function VideoDetailPage() {
       {/* Result Modal */}
       {showResultModal && uploadResult && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+          <div className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-xl max-h-[80vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-gray-900">Video Posted Successfully! 🎉</h2>
               <button
@@ -304,39 +374,87 @@ export default function VideoDetailPage() {
             </div>
 
             <div className="space-y-4 mb-6">
-              {/* YouTube Link */}
-              {uploadResult.includes('YouTube') && (
-                <div className="rounded-lg bg-red-50 p-4">
-                  <p className="text-sm font-medium text-gray-900 mb-2">YouTube Shorts</p>
-                  <a
-                    href={uploadResult.split('YouTube: ')[1]?.split('\n')[0]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-red-600 hover:text-red-700 font-medium break-all"
-                  >
-                    {uploadResult.split('YouTube: ')[1]?.split('\n')[0]}
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
+              {/* YouTube Results */}
+              {uploadResult.youtube && (
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-3">YouTube Uploads</h3>
+                  <div className="space-y-2">
+                    {uploadResult.youtube.urls && uploadResult.youtube.urls.length > 0 ? (
+                      uploadResult.youtube.urls.map((upload: any, idx: number) => (
+                        <div key={idx} className="rounded-lg bg-red-50 p-3">
+                          <p className="text-sm font-medium text-gray-900 mb-1">
+                            {upload.accountTag || upload.channelTitle || 'YouTube Account'}
+                          </p>
+                          <a
+                            href={upload.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-red-600 hover:text-red-700 font-medium break-all flex items-center gap-2"
+                          >
+                            {upload.url}
+                            <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </a>
+                        </div>
+                      ))
+                    ) : null}
+
+                    {/* Show errors if any */}
+                    {uploadResult.youtube.errors && uploadResult.youtube.errors.length > 0 && (
+                      <div className="space-y-2">
+                        {uploadResult.youtube.errors.map((error: any, idx: number) => (
+                          <div key={idx} className="rounded-lg bg-red-100 p-3 border border-red-200">
+                            <p className="text-sm font-medium text-red-900">
+                              ❌ {error.accountTag || 'Account'}: {error.error}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
 
-              {/* Facebook Link */}
-              {uploadResult.includes('Facebook') && (
-                <div className="rounded-lg bg-blue-50 p-4">
-                  <p className="text-sm font-medium text-gray-900 mb-2">Facebook Reels</p>
-                  <a
-                    href={uploadResult.split('Facebook: ')[1]?.split('\n')[0] || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 font-medium break-all"
-                  >
-                    {uploadResult.split('Facebook: ')[1]?.split('\n')[0] || 'View on Facebook'}
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                    </svg>
-                  </a>
+              {/* Facebook Results */}
+              {uploadResult.facebook && (
+                <div>
+                  <h3 className="font-medium text-gray-900 mb-3">Facebook Uploads</h3>
+                  <div className="space-y-2">
+                    {uploadResult.facebook.urls && uploadResult.facebook.urls.length > 0 ? (
+                      uploadResult.facebook.urls.map((upload: any, idx: number) => (
+                        <div key={idx} className="rounded-lg bg-blue-50 p-3">
+                          <p className="text-sm font-medium text-gray-900 mb-1">
+                            {upload.accountTag || upload.channelTitle || 'Facebook Account'}
+                          </p>
+                          <a
+                            href={upload.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm text-blue-600 hover:text-blue-700 font-medium break-all flex items-center gap-2"
+                          >
+                            {upload.url}
+                            <svg className="h-4 w-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                          </a>
+                        </div>
+                      ))
+                    ) : null}
+
+                    {/* Show errors if any */}
+                    {uploadResult.facebook.errors && uploadResult.facebook.errors.length > 0 && (
+                      <div className="space-y-2">
+                        {uploadResult.facebook.errors.map((error: any, idx: number) => (
+                          <div key={idx} className="rounded-lg bg-blue-100 p-3 border border-blue-200">
+                            <p className="text-sm font-medium text-blue-900">
+                              ❌ {error.accountTag || 'Account'}: {error.error}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

@@ -10,7 +10,7 @@ interface AuthStore {
   error: string | null;
   login: (email: string, password: string) => Promise<void>;
   loginWithGoogle: (token: string) => Promise<void>;
-  register: (email: string, password: string) => Promise<void>;
+  register: (email: string, password: string, username?: string) => Promise<void>;
   logout: () => void;
   refreshToken: () => Promise<void>;
   setUser: (user: User | null) => void;
@@ -113,14 +113,14 @@ export const useAuthStore = create<AuthStore>()(
         }
       },
 
-      register: async (email: string, password: string, username: string) => {
+      register: async (email: string, password: string, username?: string) => {
         set({ loading: true, error: null });
         try {
           const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
           const response = await fetch(`${apiUrl}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password, username }),
+            body: JSON.stringify({ email, password, ...(username && { username }) }),
           });
           
           const data = await response.json();
