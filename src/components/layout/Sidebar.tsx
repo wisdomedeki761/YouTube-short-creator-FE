@@ -13,6 +13,7 @@ import {
   BarChart3,
   Film,
   X,
+  Shield,
 } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import { useUIStore } from '@/store/uiStore';
@@ -29,9 +30,22 @@ const dashboardLinks = [
 
 const adminLinks = [
   { href: '/admin', label: 'Overview', icon: LayoutDashboard },
-  { href: '/admin/users', label: 'Users', icon: Users },
-  { href: '/admin/filler-videos', label: 'Filler Videos', icon: Film },
-  { href: '/admin/stats', label: 'Statistics', icon: BarChart3 },
+  {
+    label: 'Management',
+    items: [
+      { href: '/admin/users', label: 'User Management', icon: Users },
+      { href: '/admin/filler-videos', label: 'Filler Videos', icon: Film },
+      { href: '/admin/stats', label: 'Statistics', icon: BarChart3 },
+    ]
+  },
+  {
+    label: 'My Features',
+    items: [
+      { href: '/videos', label: 'My Videos', icon: Video },
+      { href: '/api-keys', label: 'My API Keys', icon: Key },
+    ]
+  },
+  { href: '/profile', label: 'Profile', icon: User },
 ];
 
 export const Sidebar: React.FC = () => {
@@ -72,7 +86,41 @@ export const Sidebar: React.FC = () => {
           </div>
 
           <nav className="flex-1 space-y-1">
-            {links.map((link) => {
+            {links.map((link: any) => {
+              // Handle grouped items (sections)
+              if (link.items) {
+                return (
+                  <div key={link.label} className="pt-4">
+                    <p className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      {link.label}
+                    </p>
+                    <div className="space-y-1">
+                      {link.items.map((item: any) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href || pathname?.startsWith(item.href + '/');
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                              'flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
+                              isActive
+                                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/50 dark:text-primary-400'
+                                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-700'
+                            )}
+                            onClick={() => setSidebarOpen(false)}
+                          >
+                            <Icon className="h-5 w-5" />
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              }
+
+              // Handle regular links
               const Icon = link.icon;
               const isActive = pathname === link.href || pathname?.startsWith(link.href + '/');
               return (

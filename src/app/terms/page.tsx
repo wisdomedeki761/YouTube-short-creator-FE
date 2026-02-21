@@ -40,7 +40,7 @@ export default function TermsPage() {
             </CardHeader>
             <CardContent className="space-y-4 text-gray-700 dark:text-gray-300">
               <p>
-                By accessing and using the Video Editor service ("Service"), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
+                By accessing and using the Video Editor service (&quot;Service&quot;), you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
               </p>
             </CardContent>
           </Card>
@@ -230,7 +230,7 @@ export default function TermsPage() {
                 TO THE MAXIMUM EXTENT PERMITTED BY LAW:
               </p>
               <ul className="list-disc list-inside space-y-2 ml-4">
-                <li>The Service is provided "AS IS" and "AS AVAILABLE" without warranties of any kind</li>
+                <li>The Service is provided &quot;AS IS&quot; and &quot;AS AVAILABLE&quot; without warranties of any kind</li>
                 <li>We do not guarantee that the Service will be uninterrupted, error-free, or secure</li>
                 <li>We are not liable for any indirect, incidental, special, or consequential damages</li>
                 <li>Our total liability shall not exceed the amount you paid for the Service in the past 12 months</li>

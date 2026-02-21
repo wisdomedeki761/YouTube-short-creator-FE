@@ -46,13 +46,21 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleStatusUpdate = async (userId: string, status: string) => {
+  const handleStatusUpdate = async (userId: string, action: 'approved' | 'rejected' | 'revoked') => {
     try {
-      await apiClient.updateUserStatus(userId, status);
-      toast.success('User status updated');
+      if (action === 'approved') {
+        await apiClient.approveUser(userId);
+        toast.success('User approved successfully');
+      } else if (action === 'rejected') {
+        await apiClient.rejectUser(userId);
+        toast.success('User rejected successfully');
+      } else if (action === 'revoked') {
+        await apiClient.revokeUser(userId);
+        toast.success('User access revoked successfully');
+      }
       fetchUsers();
     } catch (error: any) {
-      toast.error(error.message || 'Failed to update user status');
+      toast.error(error.message || `Failed to ${action} user`);
     }
   };
 
@@ -125,9 +133,12 @@ export default function AdminUsersPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Badge variant={user.status === 'approved' ? 'success' : 'default'}>
-                            {user.status}
+                          <Badge variant={(user as any).is_approved ? 'success' : 'default'}>
+                            {(user as any).is_approved ? 'Approved' : 'Pending'}
                           </Badge>
+                          {(user as any).is_admin && (
+                            <Badge className="ml-2 bg-purple-100 text-purple-800">Admin</Badge>
+                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {formatDate(user.createdAt)}
@@ -137,33 +148,36 @@ export default function AdminUsersPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex items-center gap-2">
-                            {user.status !== 'approved' && (
+                            {!(user as any).is_approved && (
                               <Button
-                                variant="outline"
                                 size="sm"
                                 onClick={() => handleStatusUpdate(user.id, 'approved')}
+                                title="Approve user"
+                                className="bg-green-600 hover:bg-green-700 text-white"
                               >
-                                <CheckCircle className="h-4 w-4" />
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Approve
                               </Button>
                             )}
-                            {user.status !== 'rejected' && (
+                            {(user as any).is_approved && (
                               <Button
-                                variant="outline"
                                 size="sm"
                                 onClick={() => handleStatusUpdate(user.id, 'rejected')}
+                                title="Reject user"
+                                className="bg-red-600 hover:bg-red-700 text-white"
                               >
-                                <XCircle className="h-4 w-4" />
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Reject
                               </Button>
                             )}
-                            {user.status !== 'revoked' && (
-                              <Button
-                                variant="danger"
-                                size="sm"
-                                onClick={() => handleStatusUpdate(user.id, 'revoked')}
-                              >
-                                <Ban className="h-4 w-4" />
-                              </Button>
-                            )}
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleStatusUpdate(user.id, 'revoked')}
+                              title="Revoke access"
+                            >
+                              <Ban className="h-4 w-4" />
+                            </Button>
                           </div>
                         </td>
                       </tr>

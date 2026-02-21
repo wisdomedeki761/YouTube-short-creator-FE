@@ -9,6 +9,8 @@ export interface User {
   lastLogin?: string;
   emailVerified?: boolean;
   is_admin?: boolean;
+  isAdmin?: boolean;
+  isApproved?: boolean;
 }
 
 export interface UserProfile extends User {
@@ -19,11 +21,18 @@ export interface UserProfile extends User {
 export interface ApiKey {
   id: string;
   platform: 'youtube' | 'facebook';
-  key: string;
+  key?: string;
   status: 'active' | 'inactive' | 'invalid';
   createdAt: string;
   lastUsed?: string;
   usageCount?: number;
+  accountTag?: string;
+  channelId?: string;
+  channelTitle?: string;
+  authType?: string;
+  tokenExpiry?: string;
+  isAdmin?: boolean;
+  isApproved?: boolean;
 }
 
 export interface UserPreferences {

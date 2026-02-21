@@ -8,7 +8,7 @@ export const useForm = <T extends z.ZodType>(
 ): UseFormReturn<z.infer<T>> => {
   return useReactHookForm<z.infer<T>>({
     resolver: zodResolver(schema),
-    defaultValues,
+    defaultValues: defaultValues as z.infer<T> | undefined,
   });
 };
 

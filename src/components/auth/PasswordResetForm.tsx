@@ -57,7 +57,7 @@ export const PasswordResetForm: React.FC = () => {
       <div className="w-full max-w-md space-y-6 text-center">
         <div className="rounded-lg bg-green-50 p-4">
           <p className="text-green-800">
-            We've sent a password reset link to your email. Please check your inbox.
+            We&apos;ve sent a password reset link to your email. Please check your inbox.
           </p>
         </div>
         <Button onClick={() => router.push('/login')} className="w-full">
@@ -108,7 +108,7 @@ export const PasswordResetForm: React.FC = () => {
       <div>
         <h2 className="text-3xl font-bold text-gray-900">Forgot Password</h2>
         <p className="mt-2 text-sm text-gray-600">
-          Enter your email address and we'll send you a link to reset your password
+          Enter your email address and we&apos;ll send you a link to reset your password
         </p>
       </div>
 

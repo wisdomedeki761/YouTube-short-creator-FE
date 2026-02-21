@@ -1,6 +1,8 @@
 import { Header } from '@/components/layout/Header';
 import { PasswordResetForm } from '@/components/auth/PasswordResetForm';
 
+export const dynamic = 'force-dynamic';
+
 export default function ForgotPasswordPage() {
   return (
     <>
