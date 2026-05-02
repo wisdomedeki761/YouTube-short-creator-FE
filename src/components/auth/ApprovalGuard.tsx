@@ -12,7 +12,7 @@ export function ApprovalGuard({ children }: ApprovalGuardProps) {
   const { user } = useAuthStore();
 
   // Admins bypass approval check
-  if (user?.isAdmin) {
+  if (user?.isAdmin || user?.is_admin) {
     return <>{children}</>;
   }
 
