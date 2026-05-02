@@ -5,7 +5,6 @@ import { useSearchParams } from 'next/navigation';
 import { useUserStore } from '@/store/userStore';
 import { VideoCard } from '@/components/dashboard/VideoCard';
 import { VideoUploader } from '@/components/dashboard/VideoUploader';
-import { ApprovalGuard } from '@/components/auth/ApprovalGuard';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
@@ -111,8 +110,7 @@ export default function VideosPage() {
   });
 
   return (
-    <ApprovalGuard>
-      <div className="space-y-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Videos</h1>
@@ -205,7 +203,6 @@ export default function VideosPage() {
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
       />
-      </div>
-    </ApprovalGuard>
+    </div>
   );
 }

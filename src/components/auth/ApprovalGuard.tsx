@@ -12,12 +12,12 @@ export function ApprovalGuard({ children }: ApprovalGuardProps) {
   const { user } = useAuthStore();
 
   // Admins bypass approval check
-  if (user?.isAdmin) {
+  if (user?.isAdmin || user?.is_admin) {
     return <>{children}</>;
   }
 
   // Show pending approval message if not approved
-  if (user && !user.isApproved) {
+  if (user && !user.isApproved && !user.is_approved) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <Card className="max-w-md p-8 text-center">
