@@ -17,7 +17,7 @@ export function ApprovalGuard({ children }: ApprovalGuardProps) {
   }
 
   // Show pending approval message if not approved
-  if (user && !user.isApproved && !user.is_approved) {
+  if (user && !user.isApproved) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <Card className="max-w-md p-8 text-center">
