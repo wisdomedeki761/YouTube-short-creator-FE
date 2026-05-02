@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useUserStore } from '@/store/userStore';
 import { apiClient } from '@/lib/api';
-import { ApprovalGuard } from '@/components/auth/ApprovalGuard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -235,8 +234,7 @@ export default function ApiKeysPage() {
   };
 
   return (
-    <ApprovalGuard>
-      <div className="space-y-6">
+    <div className="space-y-6">
         <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">API Keys</h1>
@@ -563,7 +561,6 @@ export default function ApiKeysPage() {
           ))}
         </div>
       )}
-      </div>
-    </ApprovalGuard>
+    </div>
   );
 }
